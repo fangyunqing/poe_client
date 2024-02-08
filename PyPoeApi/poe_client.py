@@ -4,6 +4,7 @@ import asyncio
 import datetime
 import hashlib
 import json
+import os
 import random
 import re
 import secrets
@@ -12,26 +13,26 @@ import time
 import uuid
 from dataclasses import dataclass
 from functools import wraps
-from pathlib import Path
 from subprocess import Popen, PIPE
 from typing import Dict, List, Optional, Any
 
 import aiofiles
 import aiohttp
 import execjs
+import six
 import yaml
 from aiohttp.http_websocket import WS_CLOSED_MESSAGE, WS_CLOSING_MESSAGE
 from aiohttp_socks import ProxyConnector
+from execjs import ExternalRuntime
 from loguru import logger
 
-from exception import PoeException, ReachedLimitException
-from query import QueryManager, QueryParam, query_fetch_list
+from PyPoeApi.exception import PoeException, ReachedLimitException
+from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-import six
-from execjs import ExternalRuntime
+__version__ = "0.1.6"
 
 
-class UTF8Context(ExternalRuntime.Context):
+class _UTF8Context(ExternalRuntime.Context):
 
     def _exec_with_pipe(self, source):
         cmd = getattr(getattr(self, "_runtime"), "_binary")()
@@ -56,7 +57,7 @@ class UTF8Context(ExternalRuntime.Context):
         return std_out_data
 
 
-def generate_nonce(length: int = 16):
+def _generate_nonce(length: int = 16):
     return secrets.token_hex(length // 2)
 
 
@@ -67,7 +68,7 @@ class Chat:
 
 
 @dataclass
-class Message:
+class _Message:
     # 会话标识
     chat_id: int
     # 消息标识
@@ -133,7 +134,7 @@ class PoeClient:
     # 设置URL
     _SETTING_URL = "https://poe.com/api/settings"
     # 账户文件
-    ACCOUNT_FILE: Path
+    ACCOUNT_FILE: str = ""
     # 账户文件锁
     _ACCOUNT_FILE_LOCK: asyncio.Lock = asyncio.Lock()
 
@@ -340,7 +341,7 @@ class PoeClient:
                                       'catch(e){result.error = e.message}'
                                       '};'
                                       'return results;}')
-                            execjs.ExternalRuntime.Context = UTF8Context
+                            execjs.ExternalRuntime.Context = _UTF8Context
                             ctx = execjs.compile(query_hash_text + handle)
                             try:
                                 results: List[Dict] = ctx.call('ex')
@@ -475,7 +476,7 @@ class PoeClient:
                         raise PoeException("get response time out")
                     await asyncio.sleep(1)
                     continue
-                message: Message = await q.get()
+                message: _Message = await q.get()
                 q.task_done()
                 times = 0
                 if first_message.human:
@@ -492,7 +493,7 @@ class PoeClient:
                     else:
                         continue
 
-                yield Message(
+                yield _Message(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=message.text[len(last_text):],
@@ -504,7 +505,7 @@ class PoeClient:
                     break
 
     @async_retry()
-    async def _send_message_to_chat(self, bot_name: str, chat_id: int, question: str) -> Message:
+    async def _send_message_to_chat(self, bot_name: str, chat_id: int, question: str) -> _Message:
         """
         发送问题到一个新的会话
         :param bot_name: 机器人
@@ -518,7 +519,7 @@ class PoeClient:
                 "attachments": [],
                 "bot": nickname,
                 "chatId": chat_id,
-                "clientNonce": generate_nonce(),
+                "clientNonce": _generate_nonce(),
                 "query": question,
                 "sdid": self.sdid,
                 "shouldFetchChat": True,
@@ -544,11 +545,11 @@ class PoeClient:
         chat_data = message_data["data"]["messageEdgeCreate"]["chat"]
         last_edge_node = chat_data["messagesConnection"]["edges"][-1]["node"]
 
-        return Message(chat_id=chat_data["chatId"],
-                       message_id=last_edge_node["messageId"],
-                       text=last_edge_node["text"],
-                       finished=last_edge_node["state"] == "complete",
-                       human=self._is_human(last_edge_node["author"]))
+        return _Message(chat_id=chat_data["chatId"],
+                        message_id=last_edge_node["messageId"],
+                        text=last_edge_node["text"],
+                        finished=last_edge_node["state"] == "complete",
+                        human=self._is_human(last_edge_node["author"]))
 
     async def _send_query(self, query_name: str, variables: dict) -> Optional[dict]:
         """
@@ -684,7 +685,7 @@ class PoeClient:
                                     if finished:
                                         logger.info(ws_message)
                                     await q.put(
-                                        Message(
+                                        _Message(
                                             chat_id=chat_id,
                                             message_id=message.get("messageId"),
                                             text=message.get("text"),
@@ -777,20 +778,22 @@ class PoeClient:
             await cls._write_yml_config(cls._ACCOUNT_FILE_LOCK, cls.ACCOUNT_FILE, account_data)
 
     @staticmethod
-    async def _read_yml_config(lock: asyncio.Lock, file_path: Path) -> Any:
+    async def _read_yml_config(lock: asyncio.Lock, file_path: str) -> Any:
         """
         读取配置文件
         :param lock:
         :param file_path:
         :return:
         """
-        if file_path.exists():
+        if os.path.isfile(file_path):
             async with lock:
                 async with aiofiles.open(file_path, "r") as f:
                     return yaml.safe_load(await f.read())
+        else:
+            raise PoeException("please set account_file")
 
     @staticmethod
-    async def _write_yml_config(lock: asyncio.Lock, file_path: Path, data: Any):
+    async def _write_yml_config(lock: asyncio.Lock, file_path: str, data: Any):
         """
         写入配置文件
         :param lock:

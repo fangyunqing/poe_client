@@ -14,7 +14,7 @@ from typing import Dict, MutableMapping, List, Tuple, Type
 
 from aiohttp import ClientSession
 
-from core.poe.exception import PoeException
+from PyPoeApi.exception import PoeException
 
 query_fetch_list: List[QueryFetch] = []
 
