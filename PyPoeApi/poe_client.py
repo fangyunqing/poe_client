@@ -29,7 +29,7 @@ from loguru import logger
 from PyPoeApi.exception import PoeException, ReachedLimitException
 from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 
 class _UTF8Context(ExternalRuntime.Context):

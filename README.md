@@ -41,4 +41,6 @@ limit是剩余其他大部分模型，总计100条一天。
 date和hour分别更新相关的，date指出限制是什么时候，hour指出从什么时候开始更新，
 就是把4个bool值变成false，直到触发限制异常就会变成true。
 
-
+##借鉴
+大部分代码参考
+https://github.com/canxin121/Async-Poe-Client

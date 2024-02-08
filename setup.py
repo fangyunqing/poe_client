@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 
 from PyPoeApi import poe_client
 
+with open("README.md", "r", encoding='utf-8') as fh:
+    long_description = fh.read()
+
 setup(
     name='PyPoeApi',
     version=poe_client.__version__,
@@ -9,6 +12,8 @@ setup(
     author='fyq',
     author_email='245960548@qq.com',
     description='for poe api',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     py_modules=['PyPoeApi'],
     install_requires=[
