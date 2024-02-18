@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
 
     async def test():
-        async with await PoeClient.create(playground_v2=True) as poe_client:
+        async with await PoeClient.create() as poe_client:
             chat = Chat()
             # 话题
             topics = await poe_client.ask(bot_name="Playground-v2",

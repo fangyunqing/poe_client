@@ -10,7 +10,7 @@ from PyPoeApi.poe_client import PoeClient, Chat
 
 PoeClient.ACCOUNT_FILE = "设置文件位置"
 
-async with await PoeClient.create(playground_v2=True) as poe_client:
+async with await PoeClient.create() as poe_client:
     chat = Chat()
 
     image_url = await poe_client.ask(bot_name="Playground-v2",

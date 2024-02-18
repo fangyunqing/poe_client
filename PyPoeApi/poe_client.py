@@ -29,7 +29,7 @@ from loguru import logger
 from PyPoeApi.exception import PoeException, ReachedLimitException
 from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 class _UTF8Context(ExternalRuntime.Context):
@@ -726,17 +726,9 @@ class PoeClient:
 
     @classmethod
     async def create(cls,
-                     other: bool = True,
-                     playground_v2: bool = False,
-                     stable_diffusion_xl: bool = False,
-                     claude_instant_100k: bool = False,
                      proxy: str = "http://127.0.0.1:7890") -> Optional[PoeClient]:
         """
         创建初始化
-        :param other: 其他限制
-        :param playground_v2: playground_v2限制 图片
-        :param stable_diffusion_xl: stable_diffusion_xl限制 图片
-        :param claude_instant_100k: claude_instant_100k 限制
         :param proxy: 代理
         :return: PoeClient实例
         """
@@ -753,15 +745,8 @@ class PoeClient:
                 await cls._write_yml_config(cls._ACCOUNT_FILE_LOCK, cls.ACCOUNT_FILE, account_data)
             no_limit_accounts = []
             for account in account_data["accounts"]:
-                if other and account["limit"]:
-                    continue
-                if playground_v2 and account["Playground-v2"]:
-                    continue
-                if stable_diffusion_xl and account["StableDiffusionXL"]:
-                    continue
-                if claude_instant_100k and account["Claude-instant-100k"]:
-                    continue
-                no_limit_accounts.append(account)
+                if not account["limit"]:
+                    no_limit_accounts.append(account)
 
             if no_limit_accounts:
                 account = no_limit_accounts[0]
