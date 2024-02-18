@@ -29,7 +29,7 @@ from loguru import logger
 from PyPoeApi.exception import PoeException, ReachedLimitException
 from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
 class _UTF8Context(ExternalRuntime.Context):
@@ -538,7 +538,7 @@ class PoeClient:
                 "clientNonce": _generate_nonce(),
                 "query": question,
                 "sdid": self.sdid,
-                "messagePointsDisplayPrice": creator_data["messagePointLimit"]["displayMessagePointPrice"],
+                "messagePointsDisplayPrice": creator_data['data']['bot']["messagePointLimit"]["displayMessagePointPrice"],
                 "existingMessageAttachmentsIds": [],
                 "shouldFetchChat": True,
                 "source": {
@@ -553,7 +553,7 @@ class PoeClient:
         status_message = message_data["data"]["messageEdgeCreate"]["statusMessage"]
         if status != "success":
             if status == "reached_limit":
-                await self._limit(self, bot_name)
+                await self._limit(self)
                 raise ReachedLimitException(f"{bot_name}: {status_message}")
             else:
                 raise PoeException(status_message)
@@ -774,24 +774,16 @@ class PoeClient:
                 raise PoeException("no poe account can use or all limit for this model")
 
     @classmethod
-    async def _limit(cls, poe_client: PoeClient, bot_name: str):
+    async def _limit(cls, poe_client: PoeClient):
         """
         限制
         :param poe_client:
-        :param bot_name:
         :return:
         """
         if account_data := await cls._read_yml_config(cls._ACCOUNT_FILE_LOCK, cls.ACCOUNT_FILE):
             for account in account_data["accounts"]:
                 if poe_client.p_b == account["p_b"] and poe_client.formkey == account["formkey"]:
-                    if bot_name == "Playground-v2":
-                        account["Playground-v2"] = True
-                    elif bot_name == "StableDiffusionXL":
-                        account["StableDiffusionXL"] = True
-                    elif bot_name == "Claude-instant-100k":
-                        account["Claude-instant-100k"] = True
-                    else:
-                        account["limit"] = True
+                    account["limit"] = True
                     break
             await cls._write_yml_config(cls._ACCOUNT_FILE_LOCK, cls.ACCOUNT_FILE, account_data)
 

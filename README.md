@@ -1,14 +1,14 @@
 ## 用户指南
 
 ```python
-pip3 install PyPoeApi==0.1.6
+pip3 install PyPoeApi==0.2.2
 ```
 
 设置账户文件，使用PyPoeApi
 ```python
 from PyPoeApi.poe_client import PoeClient, Chat
 
-PoeClient.ACCOUNT_FILE = ""
+PoeClient.ACCOUNT_FILE = "设置文件位置"
 
 async with await PoeClient.create(playground_v2=True) as poe_client:
     chat = Chat()
@@ -23,23 +23,19 @@ ACCOUNT_FILE格式如下
 ```yaml
 accounts:
 - Claude-instant-100k: false
-  Playground-v2: false
-  StableDiffusionXL: false
   formkey: ""
-  limit: true
   p_b: ""
+  limit: true
 date: 2024-02-08
 hour: 9
 ```
-其中p_b和formkey是登录的cookie，
-通过浏览器或者抓包都可以获取到，
-剩下4个bool变量都是用于记录是否限制了，其中
-Claude-instant-100k是语言模型，限制30条一天，
-Playground-v2是图像模型，限制100条一天，
-StableDiffusionXL是图像模型，限制100条一天，
-limit是剩余其他大部分模型，总计100条一天。
-date和hour分别更新相关的，date指出限制是什么时候，hour指出从什么时候开始更新，
-就是把4个bool值变成false，直到触发限制异常就会变成true。
+文件格式为yaml  
+accounts是数组  
+- p_b和formkey是登录的cookie，通过浏览器或者抓包都可以获取到，为固定值 
+- limit表示账户是否限制，目前POE采用计算点，免费的用户具有3000个计算点，每个模型的每个消息计算点都不一样，一旦达到了总计算点，会使limit为true    
 
-##借鉴
+date用于标志是什么时候，由于计算点数每天会自动重置，当日期超过date的话，会重置上面每个账户的limit为false  
+hour指出从每天的什么时候开始更新
+
+## 借鉴
 https://github.com/canxin121/Async-Poe-Client
