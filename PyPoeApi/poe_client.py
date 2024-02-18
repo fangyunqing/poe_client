@@ -29,7 +29,7 @@ from loguru import logger
 from PyPoeApi.exception import PoeException, ReachedLimitException
 from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-__version__ = "0.1.7"
+__version__ = "0.2.1"
 
 
 class _UTF8Context(ExternalRuntime.Context):
@@ -512,6 +512,22 @@ class PoeClient:
         :param question: 问题
         :return:
         """
+        creator_data = await self._send_query(
+            query_name="layoutRightSidebarQuery",
+            variables={
+                "botId": 0,
+                "useChat": False,
+                "useBotName": True,
+                "useBotId": False,
+                "useShareCode": False,
+                "usePostId": False,
+                "chatCode": 0,
+                "botName": bot_name,
+                "shareCode": "",
+                "postId": 0
+            }
+        )
+
         nickname = self.bots[bot_name]["nickname"]
         message_data = await self._send_query(
             "sendMessageMutation",
@@ -522,6 +538,8 @@ class PoeClient:
                 "clientNonce": _generate_nonce(),
                 "query": question,
                 "sdid": self.sdid,
+                "messagePointsDisplayPrice": creator_data["messagePointLimit"]["displayMessagePointPrice"],
+                "existingMessageAttachmentsIds": [],
                 "shouldFetchChat": True,
                 "source": {
                     "sourceType": "chat_input",
