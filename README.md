@@ -1,7 +1,7 @@
 ## 用户指南
 
 ```python
-pip3 install PyPoeApi==0.2.2
+pip3 install PyPoeApi==0.2.3
 ```
 
 设置账户文件，使用PyPoeApi
