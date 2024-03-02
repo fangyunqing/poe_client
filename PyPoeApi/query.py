@@ -75,7 +75,7 @@ class HomeQueryFetch(QueryFetch):
         chunks_prefix = f"{asset_prefix}/_next/static/chunks/"
         query_file_id_regex = ('<script src="'
                                + chunks_prefix
-                               + r'([\d]{3,4})-([\w]{16}).js" defer(="")?></script>')
+                               + r'([\d]{2,4})-([\w]{16}).js" defer(="")?></script>')
         query_file_urls = []
         for query_file_id_1, query_file_id_2, _ in re.findall(query_file_id_regex, text):
             query_file_urls.append(

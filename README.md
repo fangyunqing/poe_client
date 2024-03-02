@@ -1,7 +1,7 @@
 ## 用户指南
 
 ```python
-pip3 install PyPoeApi==0.2.3
+pip3 install PyPoeApi==0.2.4
 ```
 
 设置账户文件，使用PyPoeApi
@@ -13,7 +13,7 @@ PoeClient.ACCOUNT_FILE = "设置文件位置"
 async with await PoeClient.create() as poe_client:
     chat = Chat()
 
-    image_url = await poe_client.ask(bot_name="Playground-v2",
+    image_url = await poe_client.ask(bot_name="Playground-v2.5",
                                   question="白天，下雨，沙滩，美女，长发，跳舞",
                                   chat=chat)
     print(image_url)

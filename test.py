@@ -12,7 +12,7 @@ if __name__ == '__main__':
         async with await PoeClient.create() as poe_client:
             chat = Chat()
             # 话题
-            topics = await poe_client.ask(bot_name="Playground-v2",
+            topics = await poe_client.ask(bot_name="Playground-v2.5",
                                           question="白天，下雨，沙滩，美女，长发，跳舞",
                                           chat=chat)
             print(topics)

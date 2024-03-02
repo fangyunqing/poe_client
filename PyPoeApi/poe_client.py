@@ -29,7 +29,7 @@ from loguru import logger
 from PyPoeApi.exception import PoeException, ReachedLimitException
 from PyPoeApi.query import QueryManager, QueryParam, query_fetch_list
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 
 class _UTF8Context(ExternalRuntime.Context):
@@ -294,7 +294,7 @@ class PoeClient:
                 next_data = json.loads(next_data_text)
 
                 """extract data from next_data"""
-                viewer = next_data["props"]["initialData"]["data"]["pageQuery"][
+                viewer = next_data["props"]["pageProps"]["data"]["mainQuery"][
                     "viewer"
                 ]
                 self.user_id = viewer["poeUser"]["id"]
@@ -486,7 +486,7 @@ class PoeClient:
                     if message.message_id != first_message.message_id:
                         continue
 
-                if bot_name == "StableDiffusionXL" or bot_name == "Playground-v2":
+                if bot_name == "StableDiffusionXL" or bot_name == "Playground-v2.5":
                     if message.finished:
                         p = '\\[.+\\]: (.+)\n!\\[.+\\]\\[.+\\]'
                         message.text = re.search(p, message.text).group(1)
@@ -513,18 +513,9 @@ class PoeClient:
         :return:
         """
         creator_data = await self._send_query(
-            query_name="layoutRightSidebarQuery",
+            query_name="HandleBotLandingPageQuery",
             variables={
-                "botId": 0,
-                "useChat": False,
-                "useBotName": True,
-                "useBotId": False,
-                "useShareCode": False,
-                "usePostId": False,
-                "chatCode": 0,
-                "botName": bot_name,
-                "shareCode": "",
-                "postId": 0
+                "botHandle": bot_name
             }
         )
 
@@ -538,7 +529,8 @@ class PoeClient:
                 "clientNonce": _generate_nonce(),
                 "query": question,
                 "sdid": self.sdid,
-                "messagePointsDisplayPrice": creator_data['data']['bot']["messagePointLimit"]["displayMessagePointPrice"],
+                "messagePointsDisplayPrice":
+                    creator_data['data']['bot']["messagePointLimit"]["displayMessagePointPrice"],
                 "existingMessageAttachmentsIds": [],
                 "shouldFetchChat": True,
                 "source": {
