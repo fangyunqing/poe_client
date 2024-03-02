@@ -22,8 +22,7 @@ async with await PoeClient.create() as poe_client:
 ACCOUNT_FILE格式如下
 ```yaml
 accounts:
-- Claude-instant-100k: false
-  formkey: ""
+- formkey: ""
   p_b: ""
   limit: true
 date: 2024-02-08
